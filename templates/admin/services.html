@@ -1,0 +1,79 @@
+{% extends 'admin/base.html' %}
+{% block page_title %}Services{% endblock %}
+
+{% block content %}
+<div class="admin-two-col">
+  <!-- Add service form -->
+  <div class="admin-section">
+    <h3>Add New Service</h3>
+    <form method="POST" action="{{ url_for('admin_bp.add_service') }}" class="booking-form">
+      <div class="form-group">
+        <label for="name">Service Name</label>
+        <input type="text" id="name" name="name" required placeholder="Portrait Session" />
+      </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3" required></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="price">Price (USD)</label>
+          <input type="number" id="price" name="price" step="0.01" min="0" required placeholder="150.00" />
+        </div>
+        <div class="form-group">
+          <label for="duration">Duration (minutes)</label>
+          <input type="number" id="duration" name="duration" min="15" required placeholder="60" />
+        </div>
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:.75rem">
+        <input type="checkbox" id="is_full_day" name="is_full_day" value="1" style="width:18px;height:18px;accent-color:var(--accent)" />
+        <label for="is_full_day" style="margin:0;cursor:pointer">Full Day Service <span style="color:var(--text-muted);font-size:.8rem">(client picks date only, blocks the entire day)</span></label>
+      </div>
+      <button type="submit" class="btn btn-primary">Add Service</button>
+    </form>
+  </div>
+
+  <!-- Services list -->
+  <div class="admin-section">
+    <h3>Current Services</h3>
+    {% if services %}
+    <table class="admin-table">
+      <thead>
+        <tr><th>Name</th><th>Price</th><th>Duration</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for s in services %}
+        <tr>
+          <td>
+            <strong>{{ s.name }}</strong>
+            {% if s.is_full_day %}<span class="badge badge-confirmed" style="font-size:.7rem;margin-left:.4rem">Full Day</span>{% endif %}
+            <br/><small>{{ s.description[:60] }}...</small>
+          </td>
+          <td>R{{ '%.2f' % (s.price / 100) }}</td>
+          <td>{{ s.duration }} min</td>
+          <td><span class="badge {% if s.is_active %}badge-paid{% else %}badge-cancelled{% endif %}">
+            {{ 'Active' if s.is_active else 'Inactive' }}
+          </span></td>
+          <td class="action-btns">
+            <form method="POST" action="{{ url_for('admin_bp.toggle_service', service_id=s.id) }}" style="display:inline">
+              <button type="submit" class="btn btn-sm btn-outline">
+                {{ 'Deactivate' if s.is_active else 'Activate' }}
+              </button>
+            </form>
+            {% if not s.bookings %}
+            <form method="POST" action="{{ url_for('admin_bp.delete_service', service_id=s.id) }}"
+                  style="display:inline" onsubmit="return confirm('Delete this service?')">
+              <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">No services yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

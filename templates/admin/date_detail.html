@@ -1,0 +1,82 @@
+{% extends 'admin/base.html' %}
+{% block page_title %}{{ chosen_date.strftime('%B %d, %Y') }}{% endblock %}
+
+{% block content %}
+<div class="admin-section">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+    <div>
+      <h2 style="font-family:var(--font-heading);font-size:1.6rem">{{ chosen_date.strftime('%A, %B %d, %Y') }}</h2>
+      <p style="color:var(--text-muted);font-size:.9rem">{{ bookings|length }} booking(s) for this day</p>
+    </div>
+    <a href="{{ url_for('admin_bp.availability') }}" class="btn btn-outline">← Back</a>
+  </div>
+
+  {% if bookings %}
+  <div class="date-timeline">
+    {% for b in bookings %}
+    <div class="timeline-item status-{{ b.status }}">
+      <div class="timeline-time">
+        <span class="time-start">{{ b.slot.start_time.strftime('%I:%M %p') }}</span>
+        <span class="time-end">{{ b.slot.end_time.strftime('%I:%M %p') }}</span>
+      </div>
+      <div class="timeline-bar"></div>
+      <div class="timeline-content">
+        <div class="timeline-header">
+          <strong>{{ b.client_name }}</strong>
+          <span class="badge badge-{{ b.status }}">{{ b.status.capitalize() }}</span>
+        </div>
+        <div class="timeline-details">
+          <span>{{ b.service.name }}</span>
+          <span>{{ b.client_email }}</span>
+          {% if b.client_phone %}<span>{{ b.client_phone }}</span>{% endif %}
+          {% if b.notes %}<span style="color:var(--text-muted);font-style:italic">"{{ b.notes }}"</span>{% endif %}
+        </div>
+        <div style="margin-top:.75rem;display:flex;gap:.5rem">
+          {% if b.status == 'pending' %}
+          <form method="POST" action="{{ url_for('admin_bp.accept_booking', booking_id=b.id) }}"
+                onsubmit="return confirm('Accept this booking?')">
+            <button type="submit" class="btn btn-sm btn-accept">Accept</button>
+          </form>
+          {% endif %}
+          {% if b.status not in ('cancelled', 'confirmed') %}
+          <form method="POST" action="{{ url_for('admin_bp.cancel_booking', booking_id=b.id) }}"
+                onsubmit="return confirm('Cancel this booking?')">
+            <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-muted">No bookings for this date yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .date-timeline { display: flex; flex-direction: column; gap: 1rem; }
+  .timeline-item {
+    display: flex; gap: 1rem; align-items: stretch;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.2rem; border-left: 4px solid var(--border);
+  }
+  .timeline-item.status-paid     { border-left-color: var(--success); }
+  .timeline-item.status-confirmed{ border-left-color: #6ab4ff; }
+  .timeline-item.status-pending  { border-left-color: var(--accent); }
+  .timeline-item.status-cancelled{ border-left-color: var(--danger); opacity:.6; }
+  .timeline-time {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-width: 80px; text-align: center;
+  }
+  .time-start { font-size: 1rem; font-weight: 600; color: var(--accent); }
+  .time-end   { font-size: .78rem; color: var(--text-muted); margin-top: .2rem; }
+  .timeline-bar { width: 2px; background: var(--border); border-radius: 2px; flex-shrink: 0; }
+  .timeline-content { flex: 1; }
+  .timeline-header { display: flex; align-items: center; gap: .75rem; margin-bottom: .5rem; }
+  .timeline-header strong { font-size: 1rem; }
+  .timeline-details { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; font-size: .85rem; color: var(--text-muted); }
+</style>
+{% endblock %}

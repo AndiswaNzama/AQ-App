@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Book a Session – {{ photographer_name }}{% endblock %}
+
+{% block head %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>Book a Session</h1>
+    <p>Follow the steps below to reserve your date</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container booking-container">
+
+    <!-- Step indicator -->
+    <div class="steps">
+      <div class="step active" id="step-ind-1"><span>1</span> Service</div>
+      <div class="step" id="step-ind-2"><span>2</span> Date & Time</div>
+      <div class="step" id="step-ind-3"><span>3</span> Your Details</div>
+      <div class="step" id="step-ind-4"><span>4</span> Payment</div>
+    </div>
+
+    <!-- Step 1: Service -->
+    <div class="booking-step" id="step-1">
+      <h2>Choose a Service</h2>
+      <div class="services-grid">
+        {% for service in services %}
+        <label class="service-card selectable {% if selected_service_id == service.id %}selected{% endif %}" data-id="{{ service.id }}">
+          <input type="radio" name="service" value="{{ service.id }}" {% if selected_service_id == service.id %}checked{% endif %} hidden />
+          <h3>{{ service.name }}</h3>
+          <div class="service-price">R{{ '%.0f' % (service.price / 100) }}</div>
+          <div class="service-duration">{{ service.duration }} min</div>
+          <p>{{ service.description }}</p>
+        </label>
+        {% endfor %}
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-primary" id="next-step-1" disabled>Next: Pick a Date</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Calendar + Time -->
+    <div class="booking-step hidden" id="step-2">
+      <h2>Select a Date & Time</h2>
+      <div class="calendar-layout">
+        <div id="calendar"></div>
+        <div class="slot-panel">
+          <h3 id="slot-date-label">Select a date to see available times</h3>
+          <div id="slot-list"></div>
+        </div>
+      </div>
+      <div class="step-nav">
+        <button class="btn btn-outline" id="back-step-2">Back</button>
+        <button class="btn btn-primary" id="next-step-2" disabled>Next: Your Details</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Client Details -->
+    <div class="booking-step hidden" id="step-3">
+      <h2>Your Details</h2>
+      <form id="details-form" class="booking-form" novalidate>
+        <div class="form-group">
+          <label for="client_name">Full Name <span class="required">*</span></label>
+          <input type="text" id="client_name" name="client_name" required placeholder="Jane Smith" />
+        </div>
+        <div class="form-group">
+          <label for="client_email">Email Address <span class="required">*</span></label>
+          <input type="email" id="client_email" name="client_email" required placeholder="jane@example.com" />
+        </div>
+        <div class="form-group">
+          <label for="client_phone">Phone Number</label>
+          <input type="tel" id="client_phone" name="client_phone" placeholder="+1 555 000 0000" />
+        </div>
+        <div class="form-group">
+          <label for="notes">Notes or Special Requests</label>
+          <textarea id="notes" name="notes" rows="3" placeholder="Anything you'd like me to know..."></textarea>
+        </div>
+      </form>
+      <div class="step-nav">
+        <button class="btn btn-outline" id="back-step-3">Back</button>
+        <button class="btn btn-primary" id="next-step-3">Next: Review & Pay</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Review & Pay -->
+    <div class="booking-step hidden" id="step-4">
+      <h2>Review & Pay</h2>
+      <div class="review-card">
+        <div class="review-row"><span>Service</span><strong id="r-service"></strong></div>
+        <div class="review-row"><span>Date</span><strong id="r-date"></strong></div>
+        <div class="review-row"><span>Time</span><strong id="r-time"></strong></div>
+        <div class="review-row"><span>Name</span><strong id="r-name"></strong></div>
+        <div class="review-row"><span>Email</span><strong id="r-email"></strong></div>
+        <div class="review-row total-row"><span>Total</span><strong id="r-price"></strong></div>
+      </div>
+      <div id="booking-error" class="alert alert-danger hidden"></div>
+      <div class="step-nav">
+        <button class="btn btn-outline" id="back-step-4">Back</button>
+        <button class="btn btn-primary btn-pay" id="pay-btn">Pay with Card</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+<script>
+  window.SELECTED_SERVICE_ID = {{ selected_service_id or 'null' }};
+  window.FULL_DAY_SERVICES = {{ services | selectattr('is_full_day') | map(attribute='id') | list | tojson }};
+</script>
+{% endblock %}

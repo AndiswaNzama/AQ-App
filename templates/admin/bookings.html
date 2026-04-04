@@ -1,0 +1,56 @@
+{% extends 'admin/base.html' %}
+{% block page_title %}Bookings{% endblock %}
+
+{% block content %}
+<div class="filter-bar">
+  <a href="{{ url_for('admin_bp.bookings') }}" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline{% endif %}">All</a>
+  <a href="{{ url_for('admin_bp.bookings', status='paid') }}" class="btn btn-sm {% if status_filter == 'paid' %}btn-primary{% else %}btn-outline{% endif %}">Paid</a>
+  <a href="{{ url_for('admin_bp.bookings', status='pending') }}" class="btn btn-sm {% if status_filter == 'pending' %}btn-primary{% else %}btn-outline{% endif %}">Pending</a>
+  <a href="{{ url_for('admin_bp.bookings', status='confirmed') }}" class="btn btn-sm {% if status_filter == 'confirmed' %}btn-primary{% else %}btn-outline{% endif %}">Confirmed</a>
+  <a href="{{ url_for('admin_bp.bookings', status='cancelled') }}" class="btn btn-sm {% if status_filter == 'cancelled' %}btn-primary{% else %}btn-outline{% endif %}">Cancelled</a>
+</div>
+
+{% if bookings %}
+<table class="admin-table">
+  <thead>
+    <tr>
+      <th>#</th><th>Date</th><th>Time</th><th>Client</th><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for b in bookings %}
+    <tr>
+      <td>{{ b.id }}</td>
+      <td>{{ b.slot.date.strftime('%b %d, %Y') }}</td>
+      <td>{{ b.slot.start_time.strftime('%I:%M %p') }}<br/><small>– {{ b.slot.end_time.strftime('%I:%M %p') }}</small></td>
+      <td>
+        <strong>{{ b.client_name }}</strong><br/>
+        <small>{{ b.client_email }}</small>
+        {% if b.client_phone %}<br/><small>{{ b.client_phone }}</small>{% endif %}
+        {% if b.notes %}<br/><small class="text-muted">{{ b.notes }}</small>{% endif %}
+      </td>
+      <td>{{ b.service.name }}</td>
+      <td>R{{ '%.2f' % (b.service.price / 100) }}</td>
+      <td><span class="badge badge-{{ b.status }}">{{ b.status.capitalize() }}</span></td>
+      <td class="action-btns">
+        {% if b.status == 'pending' %}
+        <form method="POST" action="{{ url_for('admin_bp.accept_booking', booking_id=b.id) }}"
+              onsubmit="return confirm('Accept and lock in this booking?')">
+          <button type="submit" class="btn btn-sm btn-accept">Accept</button>
+        </form>
+        {% endif %}
+        {% if b.status not in ('cancelled', 'confirmed') %}
+        <form method="POST" action="{{ url_for('admin_bp.cancel_booking', booking_id=b.id) }}"
+              onsubmit="return confirm('Cancel this booking?')">
+          <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="text-muted">No bookings found.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ photographer_name }}{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% set client_id = session.get('client_id') %}
+  <nav class="navbar">
+    <a class="navbar-brand" href="{{ url_for('public_bp.index') }}">{{ photographer_name }}</a>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('public_bp.index') }}">Home</a></li>
+      <li><a href="{{ url_for('public_bp.services') }}">Services</a></li>
+      {% if client_id %}
+        <li><a href="{{ url_for('auth_bp.dashboard') }}">My Bookings</a></li>
+        <li><a href="{{ url_for('auth_bp.logout') }}">Sign Out</a></li>
+      {% else %}
+        <li><a href="{{ url_for('auth_bp.login') }}">Sign In</a></li>
+        <li><a href="{{ url_for('auth_bp.register') }}">Register</a></li>
+      {% endif %}
+      <li><a href="{{ url_for('booking_bp.index') }}" class="btn-nav">Book Now</a></li>
+    </ul>
+    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+  </nav>
+
+  <main>{% block content %}{% endblock %}</main>
+
+  <footer class="footer">
+    <p>&copy; {{ 2026 }} {{ photographer_name }}. All rights reserved.</p>
+    <a href="{{ url_for('admin_bp.login') }}" class="admin-footer-link">Admin</a>
+  </footer>
+
+  <script>
+    document.querySelector('.nav-toggle').addEventListener('click', () => {
+      document.querySelector('.nav-links').classList.toggle('open');
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

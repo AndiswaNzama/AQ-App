@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Booking Confirmed – {{ photographer_name }}{% endblock %}
+
+{% block content %}
+<section class="section confirmation-section">
+  <div class="container confirmation-card">
+    {% if booking and booking.status == 'paid' %}
+    <div class="confirm-icon">&#10003;</div>
+    <h1>You're all booked!</h1>
+    <p class="confirm-sub">A confirmation email has been sent to <strong>{{ booking.client_email }}</strong>.</p>
+    <div class="confirm-details">
+      <div class="confirm-row"><span>Service</span><strong>{{ booking.service.name }}</strong></div>
+      <div class="confirm-row"><span>Date</span><strong>{{ booking.slot.date.strftime('%B %d, %Y') }}</strong></div>
+      <div class="confirm-row"><span>Time</span><strong>{{ booking.slot.start_time.strftime('%I:%M %p') }}</strong></div>
+      <div class="confirm-row"><span>Duration</span><strong>{{ booking.service.duration }} minutes</strong></div>
+      <div class="confirm-row"><span>Amount Paid</span><strong>R{{ '%.2f' % (booking.service.price / 100) }}</strong></div>
+    </div>
+    <p class="confirm-note">Questions? Contact {{ photographer_name }} directly.</p>
+    <a href="{{ url_for('public_bp.index') }}" class="btn btn-primary">Back to Home</a>
+    {% else %}
+    <div class="confirm-icon error">&#33;</div>
+    <h1>Something went wrong</h1>
+    <p>We couldn't confirm your booking. If you were charged, please contact us immediately.</p>
+    <a href="{{ url_for('booking_bp.index') }}" class="btn btn-primary">Try Again</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings – {{ photographer_name }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>My Bookings</h1>
+    <p>Welcome back, {{ client.name }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="client-toolbar">
+      <a href="{{ url_for('booking_bp.index') }}" class="btn btn-primary">+ Book a Session</a>
+      <a href="{{ url_for('auth_bp.logout') }}" class="btn btn-outline">Sign Out</a>
+    </div>
+
+    {% if bookings %}
+    <div class="bookings-list">
+      {% for b in bookings %}
+      <div class="booking-item status-{{ b.status }}">
+        <div class="booking-item-date">
+          <span class="bdate-day">{{ b.slot.date.strftime('%d') }}</span>
+          <span class="bdate-month">{{ b.slot.date.strftime('%b %Y') }}</span>
+        </div>
+        <div class="booking-item-info">
+          <h3>{{ b.service.name }}</h3>
+          <p>{{ b.slot.start_time.strftime('%I:%M %p') }} – {{ b.slot.end_time.strftime('%I:%M %p') }} &nbsp;·&nbsp; {{ b.service.duration }} min</p>
+          {% if b.notes %}<p class="text-muted" style="font-size:.85rem">{{ b.notes }}</p>{% endif %}
+        </div>
+        <div class="booking-item-meta">
+          <span class="badge badge-{{ b.status }}">{{ b.status.capitalize() }}</span>
+          <span class="booking-price">R{{ '%.2f' % (b.service.price / 100) }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <p>You have no bookings yet.</p>
+      <a href="{{ url_for('booking_bp.index') }}" class="btn btn-primary" style="margin-top:1rem">Book Your First Session</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

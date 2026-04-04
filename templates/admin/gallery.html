@@ -1,0 +1,99 @@
+{% extends 'admin/base.html' %}
+{% block page_title %}Gallery{% endblock %}
+
+{% block content %}
+<div class="admin-two-col">
+  <!-- Upload form -->
+  <div class="admin-section">
+    <h3>Upload Photos</h3>
+    <form method="POST" action="{{ url_for('admin_bp.upload_image') }}"
+          enctype="multipart/form-data" class="booking-form">
+      <div class="form-group">
+        <label for="images">Select Images</label>
+        <input type="file" id="images" name="images" accept="image/*" multiple required
+               style="padding:.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);width:100%" />
+        <small style="color:var(--text-muted);font-size:.8rem">JPG, PNG, WEBP, GIF. You can select multiple files at once.</small>
+      </div>
+      <div class="form-group">
+        <label for="caption">Caption <span style="color:var(--text-muted);font-size:.8rem">(optional)</span></label>
+        <input type="text" id="caption" name="caption" placeholder="e.g. Wedding shoot, Cape Town" />
+      </div>
+      <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+  </div>
+
+  <!-- Current gallery -->
+  <div class="admin-section">
+    <h3>Uploaded Photos <span style="color:var(--text-muted);font-size:.85rem">({{ images|length }})</span></h3>
+    {% if images %}
+    <div class="gallery-admin-grid">
+      {% for img in images %}
+      <div class="gallery-admin-item">
+        <img src="{{ url_for('static', filename='images/' + img.filename) }}" alt="{{ img.caption or img.filename }}" />
+        {% if img.role != 'gallery' %}
+        <div class="gallery-role-badge">{{ img.role|capitalize }}</div>
+        {% endif %}
+        <div class="gallery-admin-overlay">
+          {% if img.caption %}<p>{{ img.caption }}</p>{% endif %}
+          <div style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:center">
+            {% if img.role != 'hero' %}
+            <form method="POST" action="{{ url_for('admin_bp.set_image_role', image_id=img.id) }}">
+              <input type="hidden" name="role" value="hero" />
+              <button type="submit" class="btn btn-sm" style="background:#6ab4ff;color:#000;font-size:.7rem">Set Hero</button>
+            </form>
+            {% endif %}
+            {% if img.role != 'about' %}
+            <form method="POST" action="{{ url_for('admin_bp.set_image_role', image_id=img.id) }}">
+              <input type="hidden" name="role" value="about" />
+              <button type="submit" class="btn btn-sm" style="background:#c9a84c;color:#000;font-size:.7rem">Set About</button>
+            </form>
+            {% endif %}
+            {% if img.role != 'gallery' %}
+            <form method="POST" action="{{ url_for('admin_bp.set_image_role', image_id=img.id) }}">
+              <input type="hidden" name="role" value="gallery" />
+              <button type="submit" class="btn btn-sm btn-outline" style="font-size:.7rem">To Gallery</button>
+            </form>
+            {% endif %}
+            <form method="POST" action="{{ url_for('admin_bp.delete_image', image_id=img.id) }}"
+                  onsubmit="return confirm('Delete this image?')">
+              <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">No photos uploaded yet. Upload some above.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .gallery-admin-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;
+  }
+  .gallery-admin-item {
+    position: relative; border-radius: 6px; overflow: hidden;
+    aspect-ratio: 1; background: var(--surface);
+  }
+  .gallery-admin-item img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .gallery-role-badge {
+    position: absolute; top: 6px; left: 6px;
+    background: var(--accent); color: #000;
+    font-size: .65rem; font-weight: 600; padding: .2rem .5rem;
+    border-radius: 4px; text-transform: uppercase; letter-spacing: .05em;
+  }
+  .gallery-admin-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,.65);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .2s; gap: .5rem; padding: .5rem;
+  }
+  .gallery-admin-item:hover .gallery-admin-overlay { opacity: 1; }
+  .gallery-admin-overlay p { color: #fff; font-size: .75rem; text-align: center; }
+</style>
+{% endblock %}

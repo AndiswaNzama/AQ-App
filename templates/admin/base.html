@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Admin – {{ photographer_name }}{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">{{ photographer_name }}</div>
+      <nav class="sidebar-nav">
+        <a href="{{ url_for('admin_bp.dashboard') }}" class="{% if request.endpoint == 'admin_bp.dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('admin_bp.bookings') }}" class="{% if request.endpoint == 'admin_bp.bookings' %}active{% endif %}">Bookings</a>
+        <a href="{{ url_for('admin_bp.availability') }}" class="{% if request.endpoint == 'admin_bp.availability' %}active{% endif %}">Availability</a>
+        <a href="{{ url_for('admin_bp.services') }}" class="{% if request.endpoint == 'admin_bp.services' %}active{% endif %}">Services</a>
+        <a href="{{ url_for('admin_bp.gallery') }}" class="{% if request.endpoint == 'admin_bp.gallery' %}active{% endif %}">Gallery</a>
+        <a href="{{ url_for('public_bp.index') }}" target="_blank">View Site</a>
+        <a href="{{ url_for('admin_bp.logout') }}" class="logout-link">Logout</a>
+      </nav>
+    </aside>
+
+    <!-- Main content -->
+    <div class="admin-main">
+      <header class="admin-header">
+        <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+      </header>
+
+      <div class="admin-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
