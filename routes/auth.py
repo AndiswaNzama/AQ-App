@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, current_app
 from models import Client, Booking, TimeSlot
 from extensions import db
+from sqlalchemy import func
 from datetime import date, timedelta
 import re
 
@@ -89,7 +90,7 @@ def dashboard():
         return redirect(url_for('auth_bp.login', next=url_for('auth_bp.dashboard')))
 
     bookings = (Booking.query
-                .filter_by(client_email=client.email)
+                .filter(func.lower(Booking.client_email) == client.email.lower())
                 .order_by(Booking.created_at.desc())
                 .all())
 

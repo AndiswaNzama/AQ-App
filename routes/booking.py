@@ -92,7 +92,7 @@ def create():
     date_str = data.get('date')
     hour = data.get('hour')
     client_name = data.get('client_name', '').strip()
-    client_email = data.get('client_email', '').strip()
+    client_email = data.get('client_email', '').strip().lower()
     client_phone = data.get('client_phone', '').strip()
     notes = data.get('notes', '').strip()
 
