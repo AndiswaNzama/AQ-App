@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, current_app
-from models import Client, Booking
+from models import Client, Booking, TimeSlot
 from extensions import db
+from datetime import date, timedelta
 import re
 
 auth_bp = Blueprint('auth_bp', __name__)
@@ -92,7 +93,44 @@ def dashboard():
                 .order_by(Booking.created_at.desc())
                 .all())
 
+    today = date.today()
+    cancellable_ids = {
+        b.id for b in bookings
+        if b.status in ('pending', 'paid', 'confirmed')
+        and b.slot.date >= today + timedelta(days=2)
+    }
+
     return render_template('auth/dashboard.html',
                            client=client,
                            bookings=bookings,
+                           cancellable_ids=cancellable_ids,
                            photographer_name=current_app.config['PHOTOGRAPHER_NAME'])
+
+
+@auth_bp.route('/cancel/<int:booking_id>', methods=['POST'])
+def cancel_booking(booking_id):
+    client = current_client()
+    if not client:
+        return redirect(url_for('auth_bp.login'))
+
+    booking = Booking.query.get_or_404(booking_id)
+
+    # Must belong to this client
+    if booking.client_email.lower() != client.email.lower():
+        flash('You are not authorised to cancel this booking.', 'danger')
+        return redirect(url_for('auth_bp.dashboard'))
+
+    # Must be at least 2 days away
+    if booking.slot.date < date.today() + timedelta(days=2):
+        flash('Cancellations must be made at least 2 days before the session.', 'danger')
+        return redirect(url_for('auth_bp.dashboard'))
+
+    if booking.status in ('cancelled',):
+        flash('This booking is already cancelled.', 'danger')
+        return redirect(url_for('auth_bp.dashboard'))
+
+    booking.status = 'cancelled'
+    booking.slot.is_booked = False
+    db.session.commit()
+    flash('Your booking has been cancelled. The time slot is now available again.', 'success')
+    return redirect(url_for('auth_bp.dashboard'))
