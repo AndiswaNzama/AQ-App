@@ -413,7 +413,7 @@ a:hover { color: var(--accent-dark); }
 }
 
 @media (max-width: 480px) {
-  .gallery-grid { grid-template-columns: 1fr; }
+  .gallery-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
   .hero-title { font-size: 1.7rem; }
   .hero-sub { font-size: .75rem; }
   .services-grid { grid-template-columns: 1fr; }
